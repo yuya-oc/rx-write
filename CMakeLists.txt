@@ -1,0 +1,6 @@
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+PROJECT(RX621 Writer)
+
+ADD_EXECUTABLE(rx621writer main.cpp serial.cpp)
