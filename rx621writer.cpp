@@ -6,6 +6,7 @@
  */
 
 #include "rx621writer.h"
+#include "DebugPrint.h"
 #include <cstdio>
 #include <cstring>
 #include <iostream>
@@ -139,6 +140,7 @@ bool rx621writer::selectDevice(const rx621device& device) {
 }
 
 bool rx621writer::queryClockMode(std::vector<char> &clockModeList) {
+  DebugFuncStart();
   m_serial.putChar(0x21);
   unsigned char res;
   m_serial.getChar(&res);
@@ -164,6 +166,7 @@ bool rx621writer::queryClockMode(std::vector<char> &clockModeList) {
   for(int i=0;i<size;i++){
     clockModeList.push_back(response[2+i]);
   }
+  DebugFuncEnd();
   return true;
 }
 
