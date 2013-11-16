@@ -1,4 +1,7 @@
 
+#ifndef SERIAL_H_
+#define SERIAL_H_
+
 #include <termios.h>
 #include <unistd.h>
 
@@ -18,3 +21,5 @@ private:
   struct timeval m_timeout;
   fd_set m_readfs;
 };
+
+#endif
