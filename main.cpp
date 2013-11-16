@@ -3,14 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-int main(int argc, char** argv){
-  SerialPort serial;
-  printf("Opening port\n");
-//  serial.openPort("/dev/tty.usbserial-A3T9JF74", 19200);
-  if(serial.openPort("/dev/cu.usbserial-A3T9JF74", 19200) == false){
-    printf("Can't open serial port, exit\n");
-    exit(1);
-  }
+bool AdjustBitrate(SerialPort &serial){
   printf("Auto adjustment of bitrate");
   bool is_success = false;
   for(int i=0;i<30;i++){
@@ -21,15 +14,15 @@ int main(int argc, char** argv){
 
   unsigned char res;
   if(serial.getChar(&res)==false){
-    exit(1);
+    return false;
   }
   if(res == 0x00){
     is_success = true;
   }
 
   if(is_success == false){
-    printf("Auto adjustment failed, exit\n");
-    exit(1);
+    printf("Auto adjustment failed\n");
+    return false;
   }
 
   serial.putChar(0x55);
@@ -38,15 +31,33 @@ int main(int argc, char** argv){
   switch(res){
   case 0xe6:
     printf("Auto adjustment finished\n");
-    break;
+    return true;
   case 0xff:
-    printf("Auto adjustment error, exit\n");
-    exit(1);
+    printf("Auto adjustment error\n");
+    return false;
   default:
-    printf("Undefined response, exit\n");
+    printf("Undefined response\n");
+    return false;
+  }
+}
+
+
+
+
+int main(int argc, char** argv){
+  SerialPort serial;
+  printf("Opening port\n");
+//  serial.openPort("/dev/tty.usbserial-A3T9JF74", 19200);
+  if(serial.openPort("/dev/cu.usbserial-A3T9JF74", 19200) == false){
+    printf("Can't open serial port, exit\n");
     exit(1);
   }
 
+  if(AdjustBitrate(serial)==false){
+    exit(1);
+  }
+
+  unsigned char res;
   serial.putChar(0x20);
   serial.getChar(&res);
   if(res==0x30){
