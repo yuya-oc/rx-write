@@ -3,6 +3,7 @@
 #include <memory.h>
 #include <fcntl.h>
 #include <cstdio>
+#include <cassert>
 //#include <sys/select.h>
 
 SerialPort::SerialPort() {
@@ -14,8 +15,9 @@ SerialPort::~SerialPort() {
 }
 
 bool SerialPort::openPort(const char* device, int baudrate) {
-  printf("open()\n");
+  printf("open %s\n",device);
   m_fd = open(device, O_RDWR | O_NOCTTY);
+  printf("opened, m_fd = %d\n",m_fd);
   if(m_fd <= 0){
     return false;
   }
@@ -56,6 +58,8 @@ void SerialPort::closePort(){
   if(m_fd >= 0){
     tcsetattr(m_fd, TCSANOW, &m_oldTio);
     close(m_fd);
+    m_fd = 0;
+    printf("closed, m_fd = %d\n",m_fd);
   }
 }
 
@@ -83,6 +87,35 @@ bool SerialPort::getChar(unsigned char* c) {
   }
 }
 
-int SerialPort::getBytes(unsigned char* bytes, int num) {
-  return read(m_fd, bytes, num);
+bool SerialPort::changeBaudrate(int baudrate) {
+  struct termios tio;
+  memset(&tio, 0, sizeof(tio));
+  tcgetattr(m_fd, &m_oldTio); //退避
+//  cfsetispeed(&tio, baudrate);
+  cfsetospeed(&tio, baudrate);
+  printf("apply new baudrate %d\n", baudrate);
+  tcflush(m_fd,TCIFLUSH);           /* ポートのクリア */
+  tcsetattr(m_fd, TCSANOW, &tio); /* ポートの設定を有効にする */
+  return true;
+}
+
+bool SerialPort::getBytes(unsigned char* bytes, int num) {
+  int ret = select(m_fd + 1, &m_readfs, NULL, NULL, &m_timeout);
+  if(ret > 0){
+    int readed = 0;
+    while(readed < num){
+      readed += read(m_fd, bytes+readed, num-readed);
+      printf("readed=%d / %d\n",readed, num);
+    }
+    assert(readed == num);
+    return true;
+  }
+  else if(ret == 0){
+    printf("timeout\n");
+    return false;
+  }
+  else{
+    printf("error\n");
+    return false;
+  }
 }

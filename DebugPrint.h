@@ -11,9 +11,10 @@
 #include <iostream>
 
 #if 1
-#define DebugPrint(x) {std::cout<<__FUNCTION__<<":"<<#x<<"=\n"<<std::endl;}
+#define DebugPrint(x) {std::cout<<__FUNCTION__<<": "<<#x<<"="<<x<<std::endl;}
 #define DebugFuncStart() {std::cout<<__FUNCTION__<<" >>"<<std::endl;}
 #define DebugFuncEnd() {std::cout<<__FUNCTION__<<" <<"<<std::endl;}
+#define DebugFuncReturn(x) {std::cout<<__FUNCTION__<<" << "<<x<<std::endl;}
 #else
 #define DebugPrint(x)
 #define DebugFuncStart()

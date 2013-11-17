@@ -10,11 +10,12 @@ public:
   SerialPort();
   virtual ~SerialPort();
   bool openPort(const char* device, int baudrate);
+  bool changeBaudrate(int baudrate);
   void closePort();
   int putChar(unsigned char c);
   int putBytes(const unsigned char* bytes, int num);
   bool getChar(unsigned char* c);
-  int getBytes(unsigned char* bytes, int num);
+  bool getBytes(unsigned char* bytes, int num);
 private:
   struct termios m_oldTio;
   int m_fd;

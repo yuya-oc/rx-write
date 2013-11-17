@@ -8,7 +8,7 @@ int main(int argc, char** argv){
   rx621writer writer;
   printf("Opening port\n");
 //  serial.openPort("/dev/tty.usbserial-A3T9JF74", 19200);
-  if(writer.openPort("/dev/cu.usbserial-A3T9JF74", 19200) == false){
+  if(writer.openPort("/dev/cu.usbserial-A3T9JF74", 9600) == false){
     printf("Can't open serial port, exit\n");
     exit(1);
   }
@@ -32,5 +32,23 @@ int main(int argc, char** argv){
   if(writer.queryClockMode(clockModeList)==false){
     exit(1);
   }
+
+  writer.selectClockMode(clockModeList[0]);
+  printf("clockModeList[0]=%d\n",clockModeList[0]);
+  writer.queryClockMultiplier();
+  writer.queryClockFrequency();
+  writer.queryStatus();
+  writer.selectNewBitrate(38400, 12000000);
+  writer.queryStatus();
+  writer.queryUserBootMatInfo();
+  writer.queryUserMatInfo();
+  writer.queryEraseBlockInfo();
+  writer.queryWriteSize();
+
+  writer.transitToWriteEraseStatus();
+  printf("[!] User Flash have been deleted\n");
+
+  writer.writeToUserMat("blink.mot");
+
   return 0;
 }
