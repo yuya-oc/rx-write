@@ -7,6 +7,7 @@
 
 #include "rx621writer.h"
 #include "DebugPrint.h"
+#include "MotSRecordFile.h"
 #include <cstdio>
 #include <cstring>
 #include <iostream>
@@ -603,8 +604,8 @@ bool rx621writer::transitToWriteEraseStatus() {
 bool rx621writer::writeToUserMat(const std::string& motFile) {
   DebugFuncStart();
   //ファイルチェック
-  std::ifstream ifs(motFile);
-  if(!ifs){
+  MotSRecordFile mot;
+  if(mot.openMotFile(motFile) == false){
     std::cout << "Can't open "<< motFile << std::endl;
     DebugFuncReturn(false);
     return false;
@@ -620,10 +621,58 @@ bool rx621writer::writeToUserMat(const std::string& motFile) {
     return false;
   }
 
-  unsigned int start_address = 0xffff8000;
+  unsigned int start_address = mot.getStartAddress();
   unsigned int address = start_address;
-  while(!ifs.eof()){
+  int image_size = mot.getImageSize();
+  if(image_size % 256 > 0){
+    image_size += 256 - image_size%256;
   }
+  DebugPrint(mot.getImageSize());
+  DebugPrint(image_size);
+  unsigned char image_buff[image_size];
+  for(int i=0;i<image_size;i++){
+    image_buff[i] = 0xff;
+  }
+  mot.getRawImage(image_buff, image_size);
+  while(address-start_address < image_size){
+    bool is_all_0xff = true;
+    for(int i=0;i<256;i++){
+      if(image_buff[address-start_address+i] != 0xff){
+        is_all_0xff = false;
+      }
+    }
+    if(is_all_0xff){
+      printf("Skip %X\n", address);
+      address+=256;
+      continue;
+    }
+
+    unsigned char buff[256+6];
+    buff[0] = 0x50;
+    buff[1] = address >> 24;
+    buff[2] = address >> 16;
+    buff[3] = address >> 8;
+    buff[4] = address >> 0;
+    printf("address= %8X\n", address);
+    printf("st_addr= %8X\n", start_address);
+    DebugPrint(address - start_address);
+    memcpy(buff+5, image_buff+address-start_address, 256);
+    buff[256+5] = calculateSum((char*)buff, 256+5);
+    m_serial.putBytes((unsigned char*)buff, 256+6);
+
+    res = 0;
+    m_serial.getChar(&res);
+    printf("write to %x res=%02xh\n",address, (unsigned int)res);
+    if(res!=0x06){
+      res = 0;
+      m_serial.getChar(&res);
+      printf("error=%02xh\n",(unsigned int)res);
+      return false;
+    }
+    address += 256;
+  }
+  DebugPrint(mot.getImageSize());
+  DebugPrint(address - start_address);
 
   char buff[6];
   address = 0xffffffff;

@@ -5,10 +5,18 @@
 #include <iostream>
 
 int main(int argc, char** argv){
+  if(argc < 3){
+    std::cout << "Usage: " << argv[0] << " DEVICE FILE" << std::endl;
+    return 1;
+  }
+  std::string device(argv[1]);
+  std::string file(argv[2]);
+
   rx621writer writer;
   printf("Opening port\n");
 //  serial.openPort("/dev/tty.usbserial-A3T9JF74", 19200);
-  if(writer.openPort("/dev/cu.usbserial-A3T9JF74", 9600) == false){
+//  if(writer.openPort("/dev/cu.usbserial-A3T9JF74", 9600) == false){
+  if(writer.openPort(device.c_str(), 9600) == false){
     printf("Can't open serial port, exit\n");
     exit(1);
   }
@@ -48,7 +56,7 @@ int main(int argc, char** argv){
   writer.transitToWriteEraseStatus();
   printf("[!] User Flash have been deleted\n");
 
-  writer.writeToUserMat("blink.mot");
+  writer.writeToUserMat(file.c_str());
 
   return 0;
 }

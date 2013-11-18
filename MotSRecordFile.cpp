@@ -31,15 +31,18 @@ bool MotSRecordFile::openMotFile(const std::string& motFile) {
 
   std::vector<AddressAndData> dataArray;
   while(!ifs.eof()){
+    bool is_eof = false;
     std::string record;
     ifs >> record;
     DebugPrint(record);
     switch(record[1]){
     case '7':
-      return true;
+      is_eof = true;
+      break;
     case '3':
       break;
     }
+    if(is_eof) break;
     std::string size_string(record.c_str()+2, 2);
     int size = strtol(size_string.c_str(), NULL, 16);
     DebugPrint(size_string);
@@ -65,6 +68,7 @@ bool MotSRecordFile::openMotFile(const std::string& motFile) {
   }
 
   unsigned int last_address = (dataArray.end()-1)->address;
+  DebugPrint(last_address);
   m_rawImage.clear();
   m_rawImage.resize(last_address - m_startAddress + 1, 0xff);
   for(std::vector<AddressAndData>::const_iterator it=dataArray.begin(); it!=dataArray.end(); ++it){
