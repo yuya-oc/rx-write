@@ -56,7 +56,13 @@ int main(int argc, char** argv){
   writer.transitToWriteEraseStatus();
   printf("[!] User Flash have been deleted\n");
 
-  writer.writeToUserMat(file.c_str());
+  if(writer.writeToUserMat(file.c_str())==true){
+    printf("\nComplete!!!\n\n");
+  }
+  else{
+    printf("\nFailed.....\n\n");
+    return 1;
+  }
 
   return 0;
 }
