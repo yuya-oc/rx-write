@@ -634,6 +634,7 @@ bool rx621writer::writeToUserMat(const std::string& motFile) {
     image_buff[i] = 0xff;
   }
   mot.getRawImage(image_buff, image_size);
+  int wrote_size = 0;
   while(address-start_address < image_size){
     bool is_all_0xff = true;
     for(int i=0;i<256;i++){
@@ -642,7 +643,7 @@ bool rx621writer::writeToUserMat(const std::string& motFile) {
       }
     }
     if(is_all_0xff){
-      printf("Skip %X\n", address);
+      //printf("Skip %X\n", address);
       address+=256;
       continue;
     }
@@ -670,6 +671,7 @@ bool rx621writer::writeToUserMat(const std::string& motFile) {
       return false;
     }
     address += 256;
+    wrote_size += 256;
   }
   DebugPrint(mot.getImageSize());
   DebugPrint(address - start_address);
@@ -692,5 +694,6 @@ bool rx621writer::writeToUserMat(const std::string& motFile) {
     m_serial.getChar(&res);
     printf("error=%02xh\n",(unsigned int)res);
   }
+  printf("\nActual ROM size = %d bytes!\n", wrote_size);
   return true;
 }
