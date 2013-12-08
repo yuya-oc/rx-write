@@ -6,11 +6,15 @@
 
 int main(int argc, char** argv){
   if(argc < 3){
-    std::cout << "Usage: " << argv[0] << " DEVICE FILE" << std::endl;
+    std::cout << "Usage: " << argv[0] << " DEVICE FILE [BAUDRATE]" << std::endl;
     return 1;
   }
   std::string device(argv[1]);
   std::string file(argv[2]);
+  int baudrate = 38400;
+  if(argc == 4){
+    baudrate = atoi(argv[3]);
+  }
 
   rx621writer writer;
   printf("Opening port\n");
@@ -46,7 +50,11 @@ int main(int argc, char** argv){
   writer.queryClockMultiplier();
   writer.queryClockFrequency();
   writer.queryStatus();
-  writer.selectNewBitrate(38400, 12000000);
+  if(writer.selectNewBitrate(baudrate, 12000000) == false){
+//  if(writer.selectNewBitrate(38400, 12000000) == false){
+    printf("Bitrate error!\n");
+//    return 1;
+  }
   writer.queryStatus();
   writer.queryUserBootMatInfo();
   writer.queryUserMatInfo();
